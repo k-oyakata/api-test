@@ -54,6 +54,7 @@ function result_issue_new_debug() {
   body=$(build_body ${mon_u} ${fri_u})
 
   cat <<-EOS
+	${BASE_URI}/repos/${OWNER}/${REPO}/issues <<-EOS
 	{
 	"title": "${title}",
 	"body": "${body}",
@@ -98,23 +99,37 @@ function build_body() {
 ### Main ###
 # arguments checking
 # milestone checking
-if [ $# -ne 2 ]; then
+if [ $# -ne 1 ] && [ $# -ne 4 ] ; then
     echo "Error: Few or more arguments."
-    echo "Usage: $0 GITHUB_TOKEN MILESTONE_NAME"
+    echo "Usage: $0 GITHUB_TOKEN [OWNER REPO MILESTONE_NAME]"
     exit 1
 fi
 
 GITHUB_TOKEN=$1
-MILESTONE_NAME=${2:-$MILESTONE_NAME}
+
+OWNER=${2:-$OWNER}
+if [ -z "$OWNER" ]; then
+    echo "Error: No owner was set."
+    echo "Usage: $0 GITHUB_TOKEN [OWNER REPO MILESTONE_NAME]"
+    exit 1
+fi
+REPO=${3:-$REPO}
+if [ -z "$REPO" ]; then
+    echo "Error: No repo was set."
+    echo "Usage: $0 GITHUB_TOKEN [OWNER REPO MILESTONE_NAME]"
+    exit 1
+fi
+MILESTONE_NAME=${4:-$MILESTONE_NAME}
 if [ -z "$MILESTONE_NAME" ]; then
     echo "Error: No milestone name was set."
-    echo "Usage: $0 GITHUB_TOKEN MILESTONE_NAME"
+    echo "Usage: $0 GITHUB_TOKEN [OWNER REPO MILESTONE_NAME]"
     exit 1
 fi
 
 MILESTONE_NUMBER=$(get_milestone_number "${MILESTONE_NAME}")
 if [ -z "$MILESTONE_NUMBER" ]; then
     echo "Error: No milestone was found (${MILESTONE_NAME})."
+    echo "Usage: $0 GITHUB_TOKEN [OWNER REPO MILESTONE_NAME]"
     exit 1
 fi
 
