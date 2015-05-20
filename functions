@@ -1,0 +1,27 @@
+#
+# requires:
+#  bash
+#
+
+function get_milestone_number() {
+  local title=$1
+  curl \
+    -s \
+    -H "Authorization: token ${GITHUB_TOKEN}" \
+    ${BASE_URI}/repos/${OWNER}/${REPO}/milestones \
+  | awk '/"number":/{num=$2};/"title":/ && /'"${title}"'/{printf("%d", num)}'
+}
+
+get_issue_number() {
+  local assignee=$1 state=$2 title_pattern=$3
+
+  curl \
+    -s \
+    -X GET \
+    -H "Authorization: token ${GITHUB_TOKEN}"  \
+    ${BASE_URI}/repos/${OWNER}/${REPO}/issues?"state=${state}&assignee=${assignee}&milestone=${MILESTONE_NUMBER}&sort=created" \
+  | awk '/"number":/{num=$2};/"title":/ && /'"${title_pattern}"'/{printf("%d", num)}'
+}
+
+
+

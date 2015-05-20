@@ -10,66 +10,59 @@ set -o pipefail
 . ./config
 . ./functions
 
-function result_issue_new() {
-  local mon_u=$1 fri_u=$2 assignee=$3
-  local title body
+function result_issue_close() {
+  local assignee=$1 title_pattern=$2
+  local issue_number
 
-  title="作業実績 (${assignee}): "$(date_range "${mon_u}" "${fri_u}")
-  body=$(build_body ${mon_u} ${fri_u})
+  issue_number=$(get_issue_number ${assignee} "open" ${title_pattern})
+  if [ -z "issue_number" ]; then
+    echo "Not found issue: ${assignee} ${title_pattern}"
+    return
+  fi
 
   curl \
-   -i \
-   -X POST \
-   -H "Authorization: token ${GITHUB_TOKEN}"  \
-   --data @- \
-   ${BASE_URI}/repos/${OWNER}/${REPO}/issues <<-EOS
+    -i \
+    -X PAtCH \
+    -H "Authorization: token ${GITHUB_TOKEN}"  \
+    --data @- \
+    ${BASE_URI}/repos/${OWNER}/${REPO}/issues/${issue_number} <<-EOS
 	{
-	"title": "${title}",
-	"body": "${body}",
-	"assignee": "${assignee}",
-	"milestone": "${MILESTONE_NUMBER}"
+	"state": "closed"
 	}
 	EOS
 }
 
-function result_issue_new_debug() {
-  local mon_u=$1 fri_u=$2 assignee=$3
-  local title body
+function result_issue_close_debug() {
+  local assignee=$1 title_pattern=$2
+  local issue_number
 
-  title="作業実績 (${assignee}): "$(date_range "${mon_u}" "${fri_u}")
-  body=$(build_body ${mon_u} ${fri_u})
+  issue_number=$(get_issue_number ${assignee} "open" ${title_pattern})
+  if [ -z "$issue_number" ]; then
+    echo "Not found issue: ${assignee} ${title_pattern}"
+    return
+  fi
 
-  cat <<-EOS
-	${BASE_URI}/repos/${OWNER}/${REPO}/issues <<-EOS
+echo ${assignee}
+echo  curl \
+    -i \
+    -X PAtCH \
+    -H "Authorization: token ${GITHUB_TOKEN}"  \
+    --data @- \
+    ${BASE_URI}/repos/${OWNER}/${REPO}/issues/${issue_number} <<-EOS
 	{
-	"title": "${title}",
-	"body": "${body}",
-	"assignee": "${assignee}",
-	"milestone": "${MILESTONE_NUMBER}"
+	"state": "closed"
 	}
 	EOS
 }
 
 function u_days_fmt() {
   local days=${1}
-  date -d "${days} days" +'%m/%d(%a)'
+  date -d "${days} days" +'%m\/%d\(%a\)'
 }
 
-function date_range() {
+function get_title_pattern() {
   local begin_date=${1} end_date=${2}
-  echo "$(u_days_fmt ${begin_date})".."$(u_days_fmt ${end_date})"
-}
-
-function build_body() {
-  local mon_u=$1 fri_u=$2
-  local body
-  
-  body="#### The plan for this week"
-  for ((d=${mon_u}; d <= ${fri_u}; d++))
-  do
-    body="${body}\n#### $(u_days_fmt $d)\n"
-  done
-  echo ${body}
+  echo "$(u_days_fmt ${begin_date})"\.\."$(u_days_fmt ${end_date})"
 }
 
 
@@ -112,11 +105,12 @@ fi
 
 # days params
 cur_u=$(date +%u) # 1..7
-mon_u="$((8 - ${cur_u}))"
+mon_u="$((-6 - ${cur_u}))"
 fri_u="$((${mon_u} + 4))"
 
 # result issue cration
+title_pattern=$(get_title_pattern ${mon_u} ${fri_u})
 for m in ${MEMBERS}
 do
-  result_issue_new ${mon_u} ${fri_u} ${m}
+  result_issue_close ${m} ${title_pattern}
 done
