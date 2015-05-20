@@ -15,14 +15,14 @@ function result_issue_close() {
   local issue_number
 
   issue_number=$(get_issue_number ${assignee} "open" ${title_pattern})
-  if [ -z "issue_number" ]; then
+  if [ -z "${issue_number}" ]; then
     echo "Not found issue: ${assignee} ${title_pattern}"
     return
   fi
 
   curl \
     -i \
-    -X PAtCH \
+    -X PATCH \
     -H "Authorization: token ${GITHUB_TOKEN}"  \
     --data @- \
     ${BASE_URI}/repos/${OWNER}/${REPO}/issues/${issue_number} <<-EOS
@@ -37,7 +37,7 @@ function result_issue_close_debug() {
   local issue_number
 
   issue_number=$(get_issue_number ${assignee} "open" ${title_pattern})
-  if [ -z "$issue_number" ]; then
+  if [ -z "${issue_number}" ]; then
     echo "Not found issue: ${assignee} ${title_pattern}"
     return
   fi
@@ -45,7 +45,7 @@ function result_issue_close_debug() {
 echo ${assignee}
 echo  curl \
     -i \
-    -X PAtCH \
+    -X PATCH \
     -H "Authorization: token ${GITHUB_TOKEN}"  \
     --data @- \
     ${BASE_URI}/repos/${OWNER}/${REPO}/issues/${issue_number} <<-EOS
