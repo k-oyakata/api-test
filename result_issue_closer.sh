@@ -110,7 +110,12 @@ fri_u="$((${mon_u} + 4))"
 
 # result issue cration
 title_pattern=$(get_title_pattern ${mon_u} ${fri_u})
+echo $DEBUG
 for m in ${MEMBERS}
 do
-  result_issue_close ${m} ${title_pattern}
+  if [ "$DEBUG" = "true" ]; then
+    result_issue_close_debug ${m} ${title_pattern}
+  else
+    result_issue_close ${m} ${title_pattern}
+  fi
 done

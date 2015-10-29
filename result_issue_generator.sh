@@ -112,11 +112,21 @@ fi
 
 # days params
 cur_u=$(date +%u) # 1..7
-mon_u="$((8 - ${cur_u}))"
+if [ "$WEEK" = "this" ]; then
+  mon_u="$((1 - ${cur_u}))"
+else
+  mon_u="$((8 - ${cur_u}))"
+fi
 fri_u="$((${mon_u} + 4))"
 
 # result issue cration
 for m in ${MEMBERS}
 do
-  result_issue_new ${mon_u} ${fri_u} ${m}
+  if [ "$DEBUG" = "true" ]; then
+    result_issue_new_debug ${mon_u} ${fri_u} ${m}
+  else
+    echo new
+    #result_issue_new ${mon_u} ${fri_u} ${m}
+  fi
+  break
 done
