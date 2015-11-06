@@ -125,8 +125,6 @@ do
   if [ "$DEBUG" = "true" ]; then
     result_issue_new_debug ${mon_u} ${fri_u} ${m}
   else
-    echo new
-    #result_issue_new ${mon_u} ${fri_u} ${m}
+    result_issue_new ${mon_u} ${fri_u} ${m}
   fi
-  break
 done
